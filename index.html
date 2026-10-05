@@ -1,0 +1,112 @@
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Santa Tracker Test</title>
+
+    <style>
+        html, body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: black;
+        }
+
+        #status {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: black;
+            padding: 15px;
+            font-family: Arial;
+            z-index: 10;
+        }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+
+<body>
+
+<div id="status">
+    🌎 EARTH + 🔴 CUBE TEST
+</div>
+
+<script>
+
+const scene = new THREE.Scene();
+
+scene.background = new THREE.Color(0x000000);
+
+
+const camera = new THREE.PerspectiveCamera(
+    45,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    100
+);
+
+camera.position.z = 7;
+
+
+const renderer = new THREE.WebGLRenderer({
+    antialias: true
+});
+
+renderer.setSize(
+    window.innerWidth,
+    window.innerHeight
+);
+
+document.body.appendChild(renderer.domElement);
+
+
+/* EARTH */
+
+const earth = new THREE.Mesh(
+    new THREE.SphereGeometry(2, 64, 64),
+    new THREE.MeshBasicMaterial({
+        color: 0x1687ff
+    })
+);
+
+scene.add(earth);
+
+
+/* RED CUBE */
+
+const cube = new THREE.Mesh(
+    new THREE.BoxGeometry(1, 1, 1),
+    new THREE.MeshBasicMaterial({
+        color: 0xff0000
+    })
+);
+
+cube.position.z = 4;
+
+scene.add(cube);
+
+
+/* ANIMATION */
+
+function animate() {
+
+    requestAnimationFrame(animate);
+
+    earth.rotation.y += 0.002;
+
+    cube.rotation.x += 0.01;
+    cube.rotation.y += 0.01;
+
+    renderer.render(scene, camera);
+}
+
+animate();
+
+</script>
+
+</body>
+</html>
+```
