@@ -1,4 +1,4 @@
-```html
+```html id="k5r2wp"
 <!DOCTYPE html>
 <html>
 <head>
@@ -26,84 +26,355 @@
     </style>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script src="https://threejs.org/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 
 <body>
 
 <div id="status">
-    🌎 EARTH + 🔴 CUBE TEST
+    🌎 EARTH + 🎅 LOADING SANTA...
 </div>
 
 <script>
 
+/* ==========================================
+   SCENE
+========================================== */
+
 const scene = new THREE.Scene();
 
-scene.background = new THREE.Color(0x000000);
+scene.background =
+    new THREE.Color(0x000000);
 
 
-const camera = new THREE.PerspectiveCamera(
-    45,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    100
-);
+/* ==========================================
+   CAMERA
+========================================== */
+
+const camera =
+    new THREE.PerspectiveCamera(
+        45,
+        window.innerWidth /
+        window.innerHeight,
+        0.1,
+        100
+    );
 
 camera.position.z = 7;
 
 
-const renderer = new THREE.WebGLRenderer({
-    antialias: true
-});
+/* ==========================================
+   RENDERER
+========================================== */
+
+const renderer =
+    new THREE.WebGLRenderer({
+        antialias: true
+    });
 
 renderer.setSize(
     window.innerWidth,
     window.innerHeight
 );
 
-document.body.appendChild(renderer.domElement);
-
-
-/* EARTH */
-
-const earth = new THREE.Mesh(
-    new THREE.SphereGeometry(2, 64, 64),
-    new THREE.MeshBasicMaterial({
-        color: 0x1687ff
-    })
+renderer.setPixelRatio(
+    Math.min(
+        window.devicePixelRatio,
+        2
+    )
 );
+
+document.body.appendChild(
+    renderer.domElement
+);
+
+
+/* ==========================================
+   LIGHTING
+========================================== */
+
+scene.add(
+    new THREE.AmbientLight(
+        0xffffff,
+        2
+    )
+);
+
+const light =
+    new THREE.DirectionalLight(
+        0xffffff,
+        3
+    );
+
+light.position.set(
+    5,
+    5,
+    5
+);
+
+scene.add(light);
+
+
+/* ==========================================
+   EARTH
+========================================== */
+
+const earth =
+    new THREE.Mesh(
+
+        new THREE.SphereGeometry(
+            2,
+            64,
+            64
+        ),
+
+        new THREE.MeshBasicMaterial({
+            color: 0x1687ff
+        })
+
+    );
 
 scene.add(earth);
 
 
-/* RED CUBE */
+/* ==========================================
+   SANTA GROUP
+========================================== */
 
-const cube = new THREE.Mesh(
-    new THREE.BoxGeometry(1, 1, 1),
-    new THREE.MeshBasicMaterial({
-        color: 0xff0000
-    })
+const santaGroup =
+    new THREE.Group();
+
+
+/*
+   Put Santa VERY clearly in front
+   of the Earth for this test.
+
+   Camera = Z 7
+   Earth front = about Z 2
+   Santa = Z 4
+*/
+
+santaGroup.position.set(
+    0,
+    0,
+    4
 );
 
-cube.position.z = 4;
+scene.add(
+    santaGroup
+);
 
-scene.add(cube);
+
+/* ==========================================
+   LOAD GLB
+========================================== */
+
+const loader =
+    new THREE.GLTFLoader();
 
 
-/* ANIMATION */
+loader.load(
+
+    "santa_-_norad_santa_tracker.glb",
+
+    function(gltf) {
+
+        console.log(
+            "SANTA LOADED:",
+            gltf
+        );
+
+
+        const model =
+            gltf.scene;
+
+
+        /* --------------------------------------
+           FIND MODEL SIZE
+        -------------------------------------- */
+
+        const box =
+            new THREE.Box3()
+                .setFromObject(
+                    model
+                );
+
+
+        const size =
+            new THREE.Vector3();
+
+
+        box.getSize(
+            size
+        );
+
+
+        console.log(
+            "MODEL SIZE:",
+            size
+        );
+
+
+        const largest =
+            Math.max(
+                size.x,
+                size.y,
+                size.z
+            );
+
+
+        /* --------------------------------------
+           SCALE
+        -------------------------------------- */
+
+        if (largest > 0) {
+
+            model.scale.setScalar(
+                2 / largest
+            );
+
+        }
+
+
+        /* --------------------------------------
+           CENTER
+        -------------------------------------- */
+
+        const centeredBox =
+            new THREE.Box3()
+                .setFromObject(
+                    model
+                );
+
+
+        const center =
+            centeredBox.getCenter(
+                new THREE.Vector3()
+            );
+
+
+        model.position.sub(
+            center
+        );
+
+
+        /* --------------------------------------
+           ADD TO SCENE
+        -------------------------------------- */
+
+        santaGroup.add(
+            model
+        );
+
+
+        document.getElementById(
+            "status"
+        ).innerHTML =
+            "🌎 EARTH WORKING<br>🎅 SANTA LOADED ✅";
+
+
+    },
+
+    function(xhr) {
+
+        if (xhr.total > 0) {
+
+            const percent =
+                Math.round(
+                    xhr.loaded /
+                    xhr.total *
+                    100
+                );
+
+            document.getElementById(
+                "status"
+            ).innerHTML =
+                "🌎 EARTH WORKING<br>🎅 SANTA " +
+                percent +
+                "%";
+
+        }
+
+    },
+
+    function(error) {
+
+        console.error(
+            "SANTA GLB ERROR:",
+            error
+        );
+
+
+        document.getElementById(
+            "status"
+        ).innerHTML =
+            "🌎 EARTH WORKING<br>❌ SANTA FAILED";
+
+
+        /*
+           Also print the error in the browser console.
+        */
+
+        console.log(error);
+
+    }
+
+);
+
+
+/* ==========================================
+   ANIMATION
+========================================== */
 
 function animate() {
 
-    requestAnimationFrame(animate);
+    requestAnimationFrame(
+        animate
+    );
+
 
     earth.rotation.y += 0.002;
 
-    cube.rotation.x += 0.01;
-    cube.rotation.y += 0.01;
 
-    renderer.render(scene, camera);
+    if (santaGroup.children.length > 0) {
+
+        santaGroup.rotation.y += 0.005;
+
+    }
+
+
+    renderer.render(
+        scene,
+        camera
+    );
+
 }
 
 animate();
+
+
+/* ==========================================
+   RESIZE
+========================================== */
+
+window.addEventListener(
+    "resize",
+    function() {
+
+        camera.aspect =
+            window.innerWidth /
+            window.innerHeight;
+
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(
+            window.innerWidth,
+            window.innerHeight
+        );
+
+    }
+);
 
 </script>
 
